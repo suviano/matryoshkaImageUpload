@@ -1,10 +1,8 @@
 package storageImage
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -78,17 +76,37 @@ func WriteImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer multipartFile.Close()
 
-	buf := bytes.NewBuffer(nil)
+	fileName, ext, err := fixImgExtension(header.Filename)
+	if err != nil {
+		log.Warningf("{WriteImage}{throws: %v}", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(ImageErrRes{
+			Message: fmt.Sprintf("%s does not have a valid format", header.Filename),
+		})
+		return
+	}
+
+	log.Info("->>", fileName, ext)
+
+	/* buf := bytes.NewBuffer(nil)
 	_, err = io.Copy(buf, multipartFile)
 	if err != nil {
 		log.Warningf("%v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(ImageErrRes{Message: ""})
 		return
+	} */
+
+	// TODO generate different sizes to save
+
+	_, err = storageClient.SaveImg(nil, multipartFile, bucket, fileName, true)
+	if err != nil {
+		log.Warningf("Saving images return error %v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(ImageErrRes{Message: ""})
+		return
 	}
 
-	log.Infof("{%d}|{%v}|{%s}", header.Size, header.Header, header.Filename)
 	w.WriteHeader(http.StatusAccepted)
 	fmt.Fprint(w, header.Size)
-	// TODO save image
 }
