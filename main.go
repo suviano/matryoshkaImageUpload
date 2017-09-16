@@ -19,7 +19,8 @@ func init() {
 	flag.Parse()
 }
 
-func main() {
+// Run start storage client and server
+func Run() {
 	localStorage = &StorageClient{}
 	err := localStorage.CreateClient(projectID)
 	if err != nil {
