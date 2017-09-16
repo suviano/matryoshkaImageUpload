@@ -25,5 +25,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("{creating client returned {%v}}", err)
 	}
-	serve()
+	log.Printf("{ initializing server on port %s }\n", serverAddr)
+	log.Fatal(server.ListenAndServeTLS(certFile, keyFile))
 }

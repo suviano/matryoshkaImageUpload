@@ -26,3 +26,5 @@ debug.test
 data/
 
 vendor/*/
+
+swagger.json

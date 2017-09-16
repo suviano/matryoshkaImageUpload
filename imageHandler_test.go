@@ -1,25 +1,35 @@
 package storageImage
 
 import (
-	"testing"
-	"net/http"
-	"github.com/stretchr/testify/assert"
-	"net/http/httptest"
 	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestWriteImage(t *testing.T) {
-	path := "/"
-	r, err := http.NewRequest("PUT", path, nil)
+func setupImageTest(t *testing.T, body io.Reader) (*httptest.ResponseRecorder, *http.Request) {
+	t.Helper()
+	path := "/image"
+	r, err := http.NewRequest("PUT", path, body)
 	assert.Nil(t, err)
 
 	rr := httptest.NewRecorder()
-	WriteImage(rr, r)
+	return rr, r
+}
 
-	b, err := json.Marshal(ImageErrRes{Message: "error reading formfile"})
-	assert.Nil(t, err)
+func TestWriteImage(t *testing.T) {
+	t.Run("BadRequestForNoFile", func(t *testing.T) {
+		rr, r := setupImageTest(t, nil)
+		WriteImage(rr, r)
 
-	assert.Equal(t, http.StatusBadRequest, rr.Code)
-	assert.Equal(t, string(b), strings.Trim(rr.Body.String(), "\n"))
+		b, err := json.Marshal(ImageErrRes{Message: "error reading formfile"})
+		assert.Nil(t, err)
+
+		assert.Equal(t, http.StatusBadRequest, rr.Code)
+		assert.Equal(t, string(b), strings.Trim(rr.Body.String(), "\n"))
+	})
 }

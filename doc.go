@@ -1,5 +1,5 @@
 /*
-Package magazine media serve
+Package storageImage magazine media serve
 
 A api to serve manipulable(rezire and crop) images
 

@@ -1,7 +1,10 @@
 package storageImage
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -66,13 +69,26 @@ type ImageErrRes struct {
 //		201: imageResult
 //		400: imageErrResult
 func WriteImage(w http.ResponseWriter, r *http.Request) {
-	_, header, err := r.FormFile("object")
+	multipartFile, header, err := r.FormFile("object")
 	if err != nil {
 		log.Warningf("{[/image][%s]}{Error reading Formfile: %v}", r.Method, err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(ImageErrRes{Message: "error reading formfile"})
 		return
 	}
+	defer multipartFile.Close()
+
+	buf := bytes.NewBuffer(nil)
+	_, err = io.Copy(buf, multipartFile)
+	if err != nil {
+		log.Warningf("%v", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(ImageErrRes{Message: ""})
+		return
+	}
+
 	log.Infof("{%d}|{%v}|{%s}", header.Size, header.Header, header.Filename)
+	w.WriteHeader(http.StatusAccepted)
+	fmt.Fprint(w, header.Size)
 	// TODO save image
 }
