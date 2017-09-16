@@ -12,3 +12,17 @@
 
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
+
+.idea/*
+
+*.crt
+*.pem
+*.key
+
+debug.test
+
+*.out
+
+data/
+
+vendor/*/
