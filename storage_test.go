@@ -44,11 +44,5 @@ func TestStorageClient_CreateClient(t *testing.T) {
 	})
 }
 
-func TestStorageClient_Save(t *testing.T) {
-	storageClient := setupCreateClient(t)
-
-	t.Run("UndefinedClient", func(t *testing.T) {
-		_, err := storageClient.SaveImg(nil, nil, "", "", false)
-		assert.NotNil(t, err)
-	})
+func TestStorageClient_SaveImg(t *testing.T) {
 }

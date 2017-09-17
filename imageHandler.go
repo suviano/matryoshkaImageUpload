@@ -1,8 +1,11 @@
 package storageImage
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
@@ -66,17 +69,18 @@ type ImageErrRes struct {
 //	Responses:
 //		201: imageResult
 //		400: imageErrResult
+//		500: imageErrResult
 func WriteImage(w http.ResponseWriter, r *http.Request) {
 	multipartFile, header, err := r.FormFile("object")
 	if err != nil {
-		log.Warningf("{[/image][%s]}{Error reading Formfile: %v}", r.Method, err)
+		log.Warningf("{WriteImage}{Error reading Formfile: %v}", err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(ImageErrRes{Message: "error reading formfile"})
 		return
 	}
 	defer multipartFile.Close()
 
-	fileName, ext, err := fixImgExtension(header.Filename)
+	fileName, mimeTyp, err := fixImgExtension(header.Filename)
 	if err != nil {
 		log.Warningf("{WriteImage}{throws: %v}", err)
 		w.WriteHeader(http.StatusBadRequest)
@@ -86,27 +90,32 @@ func WriteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Info("->>", fileName, ext)
-
-	/* buf := bytes.NewBuffer(nil)
+	buf := bytes.NewBuffer(nil)
 	_, err = io.Copy(buf, multipartFile)
 	if err != nil {
-		log.Warningf("%v", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(ImageErrRes{Message: ""})
-		return
-	} */
-
-	// TODO generate different sizes to save
-
-	_, err = storageClient.SaveImg(nil, multipartFile, bucket, fileName, true)
-	if err != nil {
-		log.Warningf("Saving images return error %v", err)
+		log.Warningf("{WriteImage}{error reading file data: %v}", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(ImageErrRes{Message: ""})
 		return
 	}
 
-	w.WriteHeader(http.StatusAccepted)
-	fmt.Fprint(w, header.Size)
+	imgMapBuf, err := generateImgsByScale(buf, mimeTyp)
+	if err != nil {
+		log.Warningf("{WriteImage}{error generating images by size: %v}", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(ImageErrRes{Message: "error saving image"})
+		return
+	}
+
+	ctx := context.Background()
+	err = storageClient.SaveImg(ctx, imgMapBuf["original"].Buf, bucket, fileName, true)
+	if err != nil {
+		log.Warningf("{WriteImage}{error saving image on storage: %v}", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(ImageErrRes{Message: "error saving image"})
+		return
+	}
+
+	w.WriteHeader(http.StatusNotImplemented)
+	fmt.Fprint(w, buf.String(), header.Size)
 }

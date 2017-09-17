@@ -2,12 +2,13 @@ package storageImage
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 
 	"cloud.google.com/go/storage"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const googleCloudProject = "GOOGLE_CLOUD_PROJECT"
@@ -15,7 +16,8 @@ const googleCloudProject = "GOOGLE_CLOUD_PROJECT"
 // IStorage gcloud storage interface
 type IStorage interface {
 	CreateClient(ctx context.Context) error
-	SaveImg(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) (string, error)
+	SaveImg(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) error
+	SaveImgs(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) error
 }
 
 // StorageClient bearer of cassandra driver
@@ -37,21 +39,33 @@ func (storageCli *StorageClient) CreateClient(ctx context.Context) error {
 	return err
 }
 
-// SaveImg one image into gcloudstorage
-func (storageCli *StorageClient) SaveImg(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) (string, error) {
+// SaveImg save one image into gcloud storage
+func (storageCli *StorageClient) SaveImg(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) error {
+	prefix := "{StorageClient}{SaveImg}"
 	if storageCli.client == nil {
-		return "", errors.New("instantiate storageClient")
+		if err := storageCli.CreateClient(ctx); err != nil {
+			log.Warningf("%s Error creating client", prefix)
+			return err
+		}
 	}
 	defer storageCli.client.Close()
 
-	bh := storageCli.client.Bucket(bucket)
-	wc := bh.Object(name).NewWriter(ctx)
+	object := storageCli.client.Bucket(bucket).Object(name)
+	wc := object.NewWriter(ctx)
+	wc.ContentType = "image/jpeg"
 	if _, err := io.Copy(wc, reader); err != nil {
-		return "", err
+		log.Warningf("%s Error while coping file", prefix)
+		return err
 	}
 	if err := wc.Close(); err != nil {
-		return "", err
+		log.Warningf("%s Error closing file", prefix)
+		return err
 	}
 
-	return "", nil
+	return nil
+}
+
+// SaveImgs save multiple imagens on gcloud storage
+func (storageCli *StorageClient) SaveImgs(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) error {
+	return nil
 }
