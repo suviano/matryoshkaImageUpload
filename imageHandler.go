@@ -80,16 +80,6 @@ func WriteImage(w http.ResponseWriter, r *http.Request) {
 	}
 	defer multipartFile.Close()
 
-	fileName, mimeTyp, err := fixImgExtension(header.Filename)
-	if err != nil {
-		log.Warningf("{WriteImage}{throws: %v}", err)
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(ImageErrRes{
-			Message: fmt.Sprintf("%s does not have a valid format", header.Filename),
-		})
-		return
-	}
-
 	buf := bytes.NewBuffer(nil)
 	_, err = io.Copy(buf, multipartFile)
 	if err != nil {
@@ -99,7 +89,17 @@ func WriteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imgMapBuf, err := generateImgsByScale(buf, mimeTyp)
+	fileName, ext, mimeTyp, err := fixImgExtension(header.Filename)
+	if err != nil {
+		log.Warningf("{WriteImage}{throws: %v}", err)
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(ImageErrRes{
+			Message: fmt.Sprintf("%s does not have a valid format", header.Filename),
+		})
+		return
+	}
+
+	imgMapBuf, err := generateImgsByScale(buf, fileName, ext, mimeTyp)
 	if err != nil {
 		log.Warningf("{WriteImage}{error generating images by size: %v}", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -108,12 +108,14 @@ func WriteImage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	ctx := context.Background()
-	err = storageClient.SaveImg(ctx, imgMapBuf["original"].Buf, bucket, fileName, true)
-	if err != nil {
-		log.Warningf("{WriteImage}{error saving image on storage: %v}", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(ImageErrRes{Message: "error saving image"})
-		return
+	for _, imgBuffer := range imgMapBuf {
+		err = storageClient.SaveImg(ctx, bucket, imgBuffer)
+		if err != nil {
+			log.Warningf("{WriteImage}{error saving image on storage: %v}", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(ImageErrRes{Message: "error saving image"})
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusNotImplemented)

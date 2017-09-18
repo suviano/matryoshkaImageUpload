@@ -16,8 +16,7 @@ const googleCloudProject = "GOOGLE_CLOUD_PROJECT"
 // IStorage gcloud storage interface
 type IStorage interface {
 	CreateClient(ctx context.Context) error
-	SaveImg(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) error
-	SaveImgs(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) error
+	SaveImg(ctx context.Context, bucket string, bufMap bufMedia) error
 }
 
 // StorageClient bearer of cassandra driver
@@ -40,7 +39,7 @@ func (storageCli *StorageClient) CreateClient(ctx context.Context) error {
 }
 
 // SaveImg save one image into gcloud storage
-func (storageCli *StorageClient) SaveImg(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) error {
+func (storageCli *StorageClient) SaveImg(ctx context.Context, bucket string, bufMap bufMedia) error {
 	prefix := "{StorageClient}{SaveImg}"
 	if storageCli.client == nil {
 		if err := storageCli.CreateClient(ctx); err != nil {
@@ -50,10 +49,10 @@ func (storageCli *StorageClient) SaveImg(ctx context.Context, reader io.Reader, 
 	}
 	defer storageCli.client.Close()
 
-	object := storageCli.client.Bucket(bucket).Object(name)
+	object := storageCli.client.Bucket(bucket).Object(bufMap.Path)
 	wc := object.NewWriter(ctx)
-	wc.ContentType = "image/jpeg"
-	if _, err := io.Copy(wc, reader); err != nil {
+	wc.ContentType = bufMap.MimeTyp
+	if _, err := io.Copy(wc, bufMap.Buf); err != nil {
 		log.Warningf("%s Error while coping file", prefix)
 		return err
 	}
@@ -62,10 +61,5 @@ func (storageCli *StorageClient) SaveImg(ctx context.Context, reader io.Reader, 
 		return err
 	}
 
-	return nil
-}
-
-// SaveImgs save multiple imagens on gcloud storage
-func (storageCli *StorageClient) SaveImgs(ctx context.Context, reader io.Reader, bucket, name string, overwrite bool) error {
 	return nil
 }

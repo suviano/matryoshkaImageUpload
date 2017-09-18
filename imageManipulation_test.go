@@ -18,7 +18,7 @@ func Test_defineFormat(t *testing.T) {
 		}
 		for _, formatType := range formats {
 			for _, fileName := range formatType {
-				_, _, err := fixImgExtension(fileName)
+				_, _, _, err := fixImgExtension(fileName)
 				assert.Nil(t, err)
 			}
 		}
@@ -26,7 +26,7 @@ func Test_defineFormat(t *testing.T) {
 
 	t.Run("InvalidFormatShouldThrowException", func(t *testing.T) {
 		invalidSource := "i.wrong"
-		img, _, err := fixImgExtension(invalidSource)
+		img, _, _, err := fixImgExtension(invalidSource)
 		assert.NotNil(t, err)
 		assert.EqualError(t, errors.New("wrong is not a valid format"), err.Error())
 		assert.Empty(t, img)
@@ -34,7 +34,7 @@ func Test_defineFormat(t *testing.T) {
 
 	t.Run("ShouldNotFormatMalformedImageSource", func(t *testing.T) {
 		malformerSource := "sdfs"
-		format, _, err := fixImgExtension(malformerSource)
+		format, _, _, err := fixImgExtension(malformerSource)
 		assert.NotNil(t, err)
 		assert.EqualError(t, fmt.Errorf(
 			"%s is malformed", malformerSource), err.Error())
@@ -45,33 +45,36 @@ func Test_defineFormat(t *testing.T) {
 func Test_generateImgsByScale(t *testing.T) {
 	t.Run("decodeOnlySupportedImageTypes", func(t *testing.T) {
 		buf := bytes.NewBuffer(nil)
-		_, err := generateImgsByScale(buf, "asdfsad")
+		_, err := generateImgsByScale(buf, "", "", "asdfsad")
 		assert.NotNil(t, err)
 	})
 
 	t.Run("willDecodeValidImageType", func(t *testing.T) {
-		setupGenerateImgsTest := func(t *testing.T, fileName, mimeTyp string) {
-			b, err := ioutil.ReadFile(fmt.Sprintf("sample_image/%s", fileName))
+		setupGenerateImgsTest := func(t *testing.T, fileName, ext, mimeTyp string) {
+			b, err := ioutil.ReadFile(fmt.Sprintf("sample_image/%s.%s", fileName, ext))
 			assert.Nil(t, err)
 			buf := bytes.NewBuffer(b)
-			img, err := generateImgsByScale(buf, mimeTyp)
+			img, err := generateImgsByScale(buf, fileName, ext, mimeTyp)
 			assert.Nil(t, err)
 			for _, item := range img {
 				assert.NotEqual(t, 0, item.Buf.Len())
 				assert.NotNil(t, item.Buf)
+				assert.Contains(t, item.Path, fileName)
 			}
 		}
 
 		t.Run("jpeg", func(t *testing.T) {
-			fileName := "cassie-boca-296277.jpg"
+			fileName := "cassie-boca-296277"
+			ext := "jpg"
 			mimeTyp := "image/jpeg"
-			setupGenerateImgsTest(t, fileName, mimeTyp)
+			setupGenerateImgsTest(t, fileName, ext, mimeTyp)
 		})
 
 		t.Run("png", func(t *testing.T) {
-			fileName := "cassie-boca-296277.png"
+			fileName := "cassie-boca-296277"
+			ext := "png"
 			mimeTyp := "image/png"
-			setupGenerateImgsTest(t, fileName, mimeTyp)
+			setupGenerateImgsTest(t, fileName, ext, mimeTyp)
 		})
 	})
 }
