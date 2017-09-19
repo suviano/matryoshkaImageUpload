@@ -1,0 +1,85 @@
+{
+  "consumes": [
+    "application/json",
+    "multipart/form-data",
+    "image/jpeg",
+    "image/png"
+  ],
+  "produces": [
+    "application/json",
+    "image/jpeg",
+    "image/png"
+  ],
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "swagger": "2.0",
+  "info": {
+    "description": "A api to serve manipulable(rezire and crop) images",
+    "title": "magazine media serve",
+    "contact": {
+      "name": "Marcos Silvano",
+      "email": "marcossilvano496@gmail.com"
+    },
+    "version": "0.0.1"
+  },
+  "host": "localhost:8080",
+  "basePath": "/",
+  "paths": {
+    "/image/{imagePrefix}": {
+      "put": {
+        "tags": ["image"],
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "schemes": [
+          "http",
+          "https"
+        ],
+        "summary": "Return path to save images.",
+        "operationId": "writeImage",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Prefix",
+            "name": "imagePrefix",
+            "in": "path",
+            "required": true
+          },
+          {
+            "type": "file",
+            "description": "image file",
+            "name": "object",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "201": {
+            "$ref": "#/responses/imageResult"
+          },
+          "400": {
+            "$ref": "#/responses/imageResult"
+          },
+          "500": {
+            "$ref": "#/responses/imageResult"
+          }
+        }
+      }
+    }
+  },
+  "responses": {
+    "imageResult": {
+      "description": "ImageRes is a response model\n\nresponse for operation in /image endpoint",
+      "headers": {
+        "msg": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
