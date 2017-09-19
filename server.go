@@ -17,7 +17,7 @@ var (
 func init() {
 	handler := http.NewServeMux()
 	handler.Handle("/favicon.ico", http.NotFoundHandler())
-	handler.Handle("/image", imageHandle())
+	handler.Handle("/image/", imageHandle())
 
 	server = &http.Server{
 		Addr:         serverAddr,

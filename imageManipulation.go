@@ -19,10 +19,6 @@ var extensionsMap = map[string]string{
 	"png":  "image/png",
 }
 
-func buildImgName(fileName, extension string) string {
-	return fmt.Sprintf("%s.%s", fileName, extension)
-}
-
 func fixImgExtension(source string) (string, string, string, error) {
 	sourceParts := strings.Split(source, ".")
 	if len(sourceParts) <= 1 {

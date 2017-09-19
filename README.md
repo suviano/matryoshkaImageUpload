@@ -1,7 +1,24 @@
 # nameless-storage-image-saver
 
-Save encoded file into google cloud storage
+## Overview
 
-## TODO
+Save image file in different sizes into google cloud storage.
 
-should receive a encoded string file with a name resize and save files into gcloud storage
+
+## Technical view
+
+
+---
+
+### Generate keys
+
+openssl genrsa -out server.key 2048
+openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
+
+---
+
+### execute directly
+
+``` sh
+export GOOGLE_CLOUD_PROJECT="<project id>" && go run cmd/main.go -bucket="<bucket name>"
+```
