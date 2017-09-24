@@ -20,7 +20,7 @@ func imageHandle() http.Handler {
 			WriteImage(w, r)
 		}
 	}
-	return applyMiddlewares(http.HandlerFunc(handlers))
+	return http.HandlerFunc(handlers)
 }
 
 type imageRes struct {
@@ -58,7 +58,7 @@ func WriteImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	imgMapBuf, err := generateImgsByScale(buf, fileName, ext, mimeTyp)
+	imgMapBuf, err := generateImgsByScale(buf, prefix, fileName, ext, mimeTyp)
 	if err != nil {
 		log.Warningf("{WriteImage}{error generating images by size: %v}", err)
 		w.WriteHeader(http.StatusInternalServerError)

@@ -13,10 +13,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const (
+	mimeJpeg = "image/jpeg"
+	mimePng  = "image/png"
+)
+
 var extensionsMap = map[string]string{
 	"jpeg": mimeJpeg,
 	"jpg":  mimeJpeg,
-	"png":  "image/png",
+	"png":  mimePng,
 }
 
 func fixImgExtension(source string) (string, string, string, error) {
@@ -35,8 +40,6 @@ func fixImgExtension(source string) (string, string, string, error) {
 
 	return fileName, ext, mimeTyp, nil
 }
-
-const mimeJpeg = "image/jpeg"
 
 func decodeImg(buf *bytes.Buffer, ext string) (img image.Image, err error) {
 	switch ext {
@@ -64,43 +67,21 @@ func encodeImg(buf *bytes.Buffer, img image.Image, mimeTyp string) error {
 type bufMedia struct {
 	Buf     *bytes.Buffer
 	Size    uint
-	Path    string
+	Path    string `json:"path"`
 	MimeTyp string
 }
 
-func generateImgsByScale(buf *bytes.Buffer, fileName, ext, mimeTyp string) (map[string]bufMedia, error) {
-	var bufMap = map[string]bufMedia{
+func generateImgsByScale(buf *bytes.Buffer, prefix, fileName, ext, mimeTyp string) (map[string]*bufMedia, error) {
+	bufMap := map[string]*bufMedia{
+		"large":  {Size: 1200},
+		"medium": {Size: 800},
+		"small":  {Size: 400},
+		"xsmall": {Size: 200},
 		"original": {
-			Buf:     bytes.NewBuffer(buf.Bytes()),
-			Size:    0,
-			Path:    fmt.Sprintf("%s-original.%s", fileName, ext),
-			MimeTyp: mimeTyp,
-		},
-		"large": {
-			Buf:     bytes.NewBuffer(nil),
-			Size:    1200,
-			Path:    fmt.Sprintf("%s-large-%s", fileName, ext),
-			MimeTyp: mimeTyp,
-		},
-		"medium": {
-			Buf:     bytes.NewBuffer(nil),
-			Size:    800,
-			Path:    fmt.Sprintf("%s-medium-%s", fileName, ext),
-			MimeTyp: mimeTyp,
-		},
-		"small": {
-			Buf:     bytes.NewBuffer(nil),
-			Size:    400,
-			Path:    fmt.Sprintf("%s-small-%s", fileName, ext),
-			MimeTyp: mimeTyp,
-		},
-		"extraSmall": {
-			Buf:     bytes.NewBuffer(nil),
-			Size:    200,
-			Path:    fmt.Sprintf("%s-extraSmall-%s", fileName, ext),
-			MimeTyp: mimeTyp,
-		},
-	}
+			Size: 0,
+			Buf:  bytes.NewBuffer(buf.Bytes()),
+			Path: fmt.Sprintf("%s/%s.%s", prefix, fileName, ext),
+		}}
 
 	img, err := decodeImg(buf, mimeTyp)
 	if err != nil {
@@ -109,7 +90,10 @@ func generateImgsByScale(buf *bytes.Buffer, fileName, ext, mimeTyp string) (map[
 	}
 
 	for sizeName, imgBufResize := range bufMap {
+		bufMap[sizeName].MimeTyp = mimeTyp
 		if sizeName != "original" {
+			bufMap[sizeName].Buf = bytes.NewBuffer(nil)
+			bufMap[sizeName].Path = fmt.Sprintf("%s/%s-%s.%s", prefix, sizeName, fileName, ext)
 			tempImg := resize.Resize(imgBufResize.Size, 0, img, resize.Lanczos3)
 			err = encodeImg(bufMap[sizeName].Buf, tempImg, mimeTyp)
 			if err != nil {

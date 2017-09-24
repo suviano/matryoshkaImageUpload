@@ -45,16 +45,17 @@ func Test_defineFormat(t *testing.T) {
 func Test_generateImgsByScale(t *testing.T) {
 	t.Run("decodeOnlySupportedImageTypes", func(t *testing.T) {
 		buf := bytes.NewBuffer(nil)
-		_, err := generateImgsByScale(buf, "", "", "asdfsad")
+		_, err := generateImgsByScale(buf, "", "", "", "asdfsad")
 		assert.NotNil(t, err)
 	})
 
 	t.Run("willDecodeValidImageType", func(t *testing.T) {
+		prefix := "someThing"
 		setupGenerateImgsTest := func(t *testing.T, fileName, ext, mimeTyp string) {
 			b, err := ioutil.ReadFile(fmt.Sprintf("sample_image/%s.%s", fileName, ext))
 			assert.Nil(t, err)
 			buf := bytes.NewBuffer(b)
-			img, err := generateImgsByScale(buf, fileName, ext, mimeTyp)
+			img, err := generateImgsByScale(buf, prefix, fileName, ext, mimeTyp)
 			assert.Nil(t, err)
 			for _, item := range img {
 				assert.NotEqual(t, 0, item.Buf.Len())
