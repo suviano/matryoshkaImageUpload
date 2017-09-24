@@ -1,5 +1,7 @@
 # nameless-storage-image-saver
 
+[![Build Status](https://travis-ci.org/suviano/matryoshkaImageUpload.svg?branch=master)](https://travis-ci.org/suviano/matryoshkaImageUpload)
+
 ## Overview
 
 Save image file in different sizes into google cloud storage.
