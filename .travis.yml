@@ -1,13 +1,7 @@
 language: go
 go:
   - master
-env:
-  global:
-    - GOARCH=amd64
-    - CGO_ENABLED=0
-    - GOOS=linux
 script:
   - go test -cover
 after_success:
-  - go build
-  - CGO_ENABLED=0 GOOS=linux go build -a --installsuffix cgo --ldflags="-s" -o matryoshka
+  - go build -a --installsuffix cgo --ldflags="-s" -o matryoshka
