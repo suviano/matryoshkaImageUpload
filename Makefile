@@ -10,6 +10,9 @@ test:
 run:
 	go run cmd/main.go
 
+install:
+	godep restore
+
 swagger-validate:
 	swagger validate ./swagger.json
 
