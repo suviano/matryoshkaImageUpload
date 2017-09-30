@@ -12,11 +12,12 @@ import (
 )
 
 var (
-	prefix string
+	prefix, bucket string
 )
 
 func main() {
 	flag.StringVar(&prefix, "prefix", "test", "prefix name")
+	flag.StringVar(&bucket, "bucket", "", "bucket name")
 	flag.Parse()
 
 	filePath := "cassie-boca-296277.jpg"
@@ -26,8 +27,8 @@ func main() {
 		log.Warning("Error reading file")
 		panic(err)
 	}
-	err = storageImage.WriteImage(prefix, filePath, bytes.NewBuffer(b))
+	err = matryoshka.WriteImage(prefix, filePath, bucket, bytes.NewBuffer(b))
 	if err != nil {
-		log.Fatalf("noooo -> %v", err)
+		log.Fatalf("Error uploading image -> %v", err)
 	}
 }

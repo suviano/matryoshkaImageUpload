@@ -1,4 +1,4 @@
 /*
-Package storageImage magazine media serve
+Package matryoshka magazine media serve
 */
-package storageImage
+package matryoshka
