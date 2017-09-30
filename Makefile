@@ -7,4 +7,7 @@ test-cover:
 test:
 	go test -cover
 
+install:
+	godep get
+
 run:
