@@ -7,6 +7,7 @@ import (
 	"image"
 	"image/jpeg"
 	"image/png"
+	"io"
 	"strings"
 
 	"github.com/nfnt/resize"
@@ -41,11 +42,31 @@ func fixImgExtension(source string) (string, string, string, error) {
 	return fileName, ext, mimeTyp, nil
 }
 
+func hasMinimumSize(buf *bytes.Buffer, decodeConfig func(r io.Reader) (image.Config, error)) (err error) {
+	config, err := decodeConfig(buf)
+	if err != nil {
+		log.Warningf("{hasMinimumSize}{error getting image configuration: %v}", err)
+		return
+	}
+	if config.Width < 1200 {
+		err = fmt.Errorf("image has %d of width, the minimum is 1200", config.Width)
+	}
+	return
+}
+
 func decodeImg(buf *bytes.Buffer, ext string) (img image.Image, err error) {
 	switch ext {
 	case mimeJpeg:
+		err = hasMinimumSize(bytes.NewBuffer(buf.Bytes()), jpeg.DecodeConfig)
+		if err != nil {
+			return
+		}
 		img, err = jpeg.Decode(buf)
 	case "image/png":
+		err = hasMinimumSize(bytes.NewBuffer(buf.Bytes()), png.DecodeConfig)
+		if err != nil {
+			return
+		}
 		img, err = png.Decode(buf)
 	default:
 		err = errors.New("{Unsupported image type}")

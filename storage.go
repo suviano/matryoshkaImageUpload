@@ -60,5 +60,10 @@ func (storageCli *StorageClient) SaveImg(ctx context.Context, prefix, bucket str
 		return err
 	}
 
+	if err := object.ACL().Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
+		log.Warningf("{StorageClient}{SaveImg} Error defining read permission", prefix)
+		return err
+	}
+
 	return nil
 }

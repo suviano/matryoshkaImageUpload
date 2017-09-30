@@ -1,21 +1,10 @@
 .PHONY: go get github.com/kardianos/govendor
 
 test-cover:
-	govendor test -coverprofile=coverage.out
-	govendor tool cover -html=coverage.out
+	go test -coverprofile=coverage.out
+	go tool cover -html=coverage.out
 
 test:
-	govendor test -cover +local
+	go test -cover
 
 run:
-	go run cmd/main.go
-
-swagger-validate:
-	swagger validate ./swagger.json
-
-swagger-serve:
-	swagger serve --flavor=swagger ./swagger.json
-
-swagger:
-	swagger validate ./swagger.json
-	swagger serve --flavor=swagger ./swagger.json
