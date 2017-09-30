@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	certFile, keyFile, serverAddr, bucket, projectID string
-	storageClient                                    IStorage
+	bucket        string
+	storageClient IStorage
 )
 
 func init() {

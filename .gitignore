@@ -26,3 +26,5 @@ debug.test
 data/
 
 vendor/*/
+
+Google-Credentials.json
