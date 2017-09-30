@@ -1,4 +1,4 @@
-package storageImage
+package matryoshka
 
 import (
 	"context"
