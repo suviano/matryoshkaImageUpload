@@ -2,7 +2,7 @@ language: go
 go:
   - master
 before_install:
-  - echo $GOOGLE_CREDENTIALS_VALUE > $GOOGLE_APPLICATION_CREDENTIALS
+  - echo $GOOGLE_CREDENTIALS_VALUE > $TRAVIS_BUILD_DIR/$GOOGLE_APPLICATION_CREDENTIALS
 script:
   - go test -cover
 after_success:
