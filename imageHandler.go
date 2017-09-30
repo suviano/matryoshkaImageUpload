@@ -1,4 +1,4 @@
-package storageImage
+package matryoshka
 
 import (
 	"bytes"
@@ -8,10 +8,21 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var (
+	storageClient IStorage
+)
+
+func init() {
+	storageClient = &StorageClient{}
+}
+
 // WriteImage save images.
-func WriteImage(prefix, filePath string, buf *bytes.Buffer) (err error) {
-	if len(prefix) == 0 {
+func WriteImage(prefix, filePath, bucket string, buf *bytes.Buffer) (err error) {
+	if prefix == "" {
 		return errors.New("empty prefix")
+	}
+	if bucket == "" {
+		return errors.New("empty bucket")
 	}
 	if buf == nil || buf.Len() == 0 {
 		return errors.New("empty buffer")
