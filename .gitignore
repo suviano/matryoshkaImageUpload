@@ -27,4 +27,4 @@ data/
 
 vendor/*/
 
-Google-Credentials.json
+client-secret.json
