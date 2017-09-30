@@ -43,6 +43,3 @@ func TestStorageClient_CreateClient(t *testing.T) {
 		assert.Nil(t, err)
 	})
 }
-
-func TestStorageClient_SaveImg(t *testing.T) {
-}

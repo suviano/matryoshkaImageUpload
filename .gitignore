@@ -26,3 +26,5 @@ debug.test
 data/
 
 vendor/*/
+
+client-secret.json

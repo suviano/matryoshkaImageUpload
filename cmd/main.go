@@ -1,7 +1,33 @@
 package main
 
-import "github.com/suviano/namelessStorageImageSaver"
+import (
+	"bytes"
+	"flag"
+	"fmt"
+	"io/ioutil"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/suviano/matryoshkaImageUpload"
+)
+
+var (
+	prefix string
+)
 
 func main() {
-	storageImage.Run()
+	flag.StringVar(&prefix, "prefix", "test", "prefix name")
+	flag.Parse()
+
+	filePath := "cassie-boca-296277.jpg"
+
+	b, err := ioutil.ReadFile(fmt.Sprintf("sample_image/%s", filePath))
+	if err != nil {
+		log.Warning("Error reading file")
+		panic(err)
+	}
+	err = storageImage.WriteImage(prefix, filePath, bytes.NewBuffer(b))
+	if err != nil {
+		log.Fatalf("noooo -> %v", err)
+	}
 }

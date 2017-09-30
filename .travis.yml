@@ -1,0 +1,10 @@
+language: go
+go:
+- master
+before_install:
+- openssl aes-256-cbc -K $encrypted_c93a4df30fc8_key -iv $encrypted_c93a4df30fc8_iv
+  -in client-secret.json.enc -out client-secret.json -d
+script:
+- go test -cover
+after_success:
+- go build -a --installsuffix cgo --ldflags="-s" -o matryoshka
