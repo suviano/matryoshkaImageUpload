@@ -28,7 +28,7 @@ func WriteImage(prefix, filePath, bucket string, buf *bytes.Buffer) (err error) 
 		return errors.New("empty buffer")
 	}
 
-	fileName, ext, mimeTyp, err := fixImgExtension(filePath)
+	fileName, ext, mimeTyp, err := solveImgInfo(filePath)
 	if err != nil {
 		log.Warningf("{WriteImage}{error solving image attr: %v}", err)
 		return
