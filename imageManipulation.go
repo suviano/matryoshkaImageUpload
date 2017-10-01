@@ -8,51 +8,10 @@ import (
 	"image/jpeg"
 	"image/png"
 	"io"
-	"strings"
 
 	"github.com/nfnt/resize"
 	log "github.com/sirupsen/logrus"
 )
-
-const (
-	mimeJpeg = "image/jpeg"
-	mimePng  = "image/png"
-)
-
-var extensionsMap = map[string]string{
-	"jpeg": mimeJpeg,
-	"jpg":  mimeJpeg,
-	"png":  mimePng,
-}
-
-func fixImgExtension(source string) (string, string, string, error) {
-	sourceParts := strings.Split(source, ".")
-	if len(sourceParts) <= 1 {
-		return "", "", "", fmt.Errorf("%s is malformed", source)
-	}
-
-	fileName := strings.Join(sourceParts[:len(sourceParts)-1], "/")
-	ext := sourceParts[len(sourceParts)-1]
-
-	mimeTyp, valid := extensionsMap[ext]
-	if valid == false {
-		return "", "", "", fmt.Errorf("%s is not a valid format", ext)
-	}
-
-	return fileName, ext, mimeTyp, nil
-}
-
-func hasMinimumSize(buf *bytes.Buffer, decodeConfig func(r io.Reader) (image.Config, error)) (err error) {
-	config, err := decodeConfig(buf)
-	if err != nil {
-		log.Warningf("{hasMinimumSize}{error getting image configuration: %v}", err)
-		return
-	}
-	if config.Width < 1200 {
-		err = fmt.Errorf("image has %d of width, the minimum is 1200", config.Width)
-	}
-	return
-}
 
 func decodeImg(buf *bytes.Buffer, ext string) (img image.Image, err error) {
 	switch ext {
@@ -62,7 +21,7 @@ func decodeImg(buf *bytes.Buffer, ext string) (img image.Image, err error) {
 			return
 		}
 		img, err = jpeg.Decode(buf)
-	case "image/png":
+	case mimePng:
 		err = hasMinimumSize(bytes.NewBuffer(buf.Bytes()), png.DecodeConfig)
 		if err != nil {
 			return
@@ -79,7 +38,7 @@ func encodeImg(buf *bytes.Buffer, img image.Image, mimeTyp string) error {
 	switch mimeTyp {
 	case mimeJpeg:
 		err = jpeg.Encode(buf, img, nil)
-	case "image/png":
+	case mimePng:
 		err = png.Encode(buf, img)
 	}
 	return err
@@ -125,4 +84,16 @@ func generateImgsByScale(buf *bytes.Buffer, prefix, fileName, ext, mimeTyp strin
 	}
 
 	return bufMap, err
+}
+
+func hasMinimumSize(buf *bytes.Buffer, decodeConfig func(r io.Reader) (image.Config, error)) (err error) {
+	config, err := decodeConfig(buf)
+	if err != nil {
+		log.Warningf("{hasMinimumSize}{error getting image configuration: %v}", err)
+		return
+	}
+	if config.Width < 1200 {
+		err = fmt.Errorf("image has %d of width, the minimum is 1200", config.Width)
+	}
+	return
 }
