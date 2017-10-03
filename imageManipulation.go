@@ -44,15 +44,16 @@ func encodeImg(buf *bytes.Buffer, img image.Image, mimeTyp string) error {
 	return err
 }
 
-type bufMedia struct {
+// BufMedia data structure with buffer and info about the image
+type BufMedia struct {
 	Buf     *bytes.Buffer
 	Size    uint
-	Path    string `json:"path"`
+	Path    string
 	MimeTyp string
 }
 
-func generateImgsByScale(buf *bytes.Buffer, prefix, fileName, ext, mimeTyp string) (map[string]*bufMedia, error) {
-	bufMap := map[string]*bufMedia{
+func generateImgsByScale(buf *bytes.Buffer, prefix, fileName, ext, mimeTyp string) (map[string]*BufMedia, error) {
+	bufMap := map[string]*BufMedia{
 		"large":  {Size: 1200},
 		"medium": {Size: 800},
 		"small":  {Size: 400},
