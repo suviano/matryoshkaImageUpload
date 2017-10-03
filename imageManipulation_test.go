@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupGenerateImgsTest(t *testing.T, fileName, ext, mimeTyp string) (map[string]*bufMedia, error) {
+func setupGenerateImgsTest(t *testing.T, fileName, ext, mimeTyp string) (map[string]*BufMedia, error) {
 	b, err := ioutil.ReadFile(fmt.Sprintf("sample_image/%s.%s", fileName, ext))
 	assert.Nil(t, err)
 	buf := bytes.NewBuffer(b)

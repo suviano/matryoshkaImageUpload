@@ -16,16 +16,16 @@ func init() {
 	storageClient = &StorageClient{}
 }
 
-// WriteImage save images.
-func WriteImage(prefix, filePath, bucket string, buf *bytes.Buffer) (err error) {
+// WriteImage save images
+func WriteImage(prefix, filePath, bucket string, buf *bytes.Buffer) (imgMapBuf map[string]*BufMedia, err error) {
 	if prefix == "" {
-		return errors.New("empty prefix")
+		return nil, errors.New("empty prefix")
 	}
 	if bucket == "" {
-		return errors.New("empty bucket")
+		return nil, errors.New("empty bucket")
 	}
 	if buf == nil || buf.Len() == 0 {
-		return errors.New("empty buffer")
+		return nil, errors.New("empty buffer")
 	}
 
 	fileName, ext, mimeTyp, err := solveImgInfo(filePath)
@@ -34,19 +34,20 @@ func WriteImage(prefix, filePath, bucket string, buf *bytes.Buffer) (err error) 
 		return
 	}
 
-	imgMapBuf, err := generateImgsByScale(buf, prefix, fileName, ext, mimeTyp)
+	imgMapBuf, err = generateImgsByScale(buf, prefix, fileName, ext, mimeTyp)
 	if err != nil {
 		log.Warningf("{WriteImage}{error generating imgs: %v}", err)
 		return
 	}
 
 	ctx := context.Background()
-	for _, imgBuffer := range imgMapBuf {
+	for i, imgBuffer := range imgMapBuf {
 		err = storageClient.SaveImg(ctx, prefix, bucket, imgBuffer)
 		if err != nil {
 			log.Warningf("{WriteImage}{error saving image on storage: %v}", err)
 			return
 		}
+		imgMapBuf[i].Buf = nil
 	}
 	return
 }

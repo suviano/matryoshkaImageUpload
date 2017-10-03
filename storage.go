@@ -16,7 +16,7 @@ const googleCloudProject = "GOOGLE_CLOUD_PROJECT"
 // IStorage gcloud storage interface
 type IStorage interface {
 	CreateClient(ctx context.Context) error
-	SaveImg(ctx context.Context, prefix, bucket string, bufMap *bufMedia) error
+	SaveImg(ctx context.Context, prefix, bucket string, bufMap *BufMedia) error
 }
 
 // StorageClient bearer of cassandra driver
@@ -39,7 +39,7 @@ func (storageCli *StorageClient) CreateClient(ctx context.Context) error {
 }
 
 // SaveImg save one image into gcloud storage
-func (storageCli *StorageClient) SaveImg(ctx context.Context, prefix, bucket string, bufMap *bufMedia) error {
+func (storageCli *StorageClient) SaveImg(ctx context.Context, prefix, bucket string, bufMap *BufMedia) error {
 	if storageCli.client == nil {
 		if err := storageCli.CreateClient(ctx); err != nil {
 			log.Warningf("%s Error creating client", prefix)
