@@ -1,3 +1,5 @@
+# Sample code to test this library
+``` sh
 package main
 
 import (
@@ -32,3 +34,4 @@ func main() {
 		log.Fatalf("Error uploading image -> %v", err)
 	}
 }
+```
