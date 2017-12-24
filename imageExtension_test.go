@@ -41,4 +41,12 @@ func Test_defineFormat(t *testing.T) {
 			"%s is malformed", malformerSource), err.Error())
 		assert.Empty(t, format)
 	})
+
+	t.Run("ShouldAcceptDotsInTheName", func(t *testing.T) {
+		source := "name.surname.jpeg"
+		name, format, _, err := solveImgInfo(source)
+		assert.Nil(t, err)
+		assert.Equal(t, "name.surname", name)
+		assert.Equal(t, "jpeg", format)
+	})
 }
