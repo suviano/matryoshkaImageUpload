@@ -17,7 +17,7 @@ func init() {
 }
 
 // WriteImage save images
-func WriteImage(prefix, filePath, bucket string, buf *bytes.Buffer) (imgMapBuf map[string]*BufMedia, err error) {
+func WriteImage(prefix, filePath, bucket string, buf *bytes.Buffer) (map[string]*BufMedia, error) {
 	if prefix == "" {
 		return nil, errors.New("empty prefix")
 	}
@@ -31,13 +31,13 @@ func WriteImage(prefix, filePath, bucket string, buf *bytes.Buffer) (imgMapBuf m
 	fileName, ext, mimeTyp, err := solveImgInfo(filePath)
 	if err != nil {
 		log.Warningf("{WriteImage}{error solving image attr: %v}", err)
-		return
+		return nil, err
 	}
 
-	imgMapBuf, err = generateImgsByScale(buf, prefix, fileName, ext, mimeTyp)
+	imgMapBuf, err := generateImgsByScale(buf, prefix, fileName, ext, mimeTyp)
 	if err != nil {
 		log.Warningf("{WriteImage}{error generating imgs: %v}", err)
-		return
+		return imgMapBuf, err
 	}
 
 	ctx := context.Background()
@@ -45,9 +45,9 @@ func WriteImage(prefix, filePath, bucket string, buf *bytes.Buffer) (imgMapBuf m
 		err = storageClient.SaveImg(ctx, prefix, bucket, imgBuffer)
 		if err != nil {
 			log.Warningf("{WriteImage}{error saving image on storage: %v}", err)
-			return
+			return imgMapBuf, err
 		}
 		imgMapBuf[i].Buf = nil
 	}
-	return
+	return imgMapBuf, err
 }
