@@ -13,24 +13,26 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func decodeImg(buf *bytes.Buffer, ext string) (img image.Image, err error) {
+func decodeImg(buf *bytes.Buffer, ext string) (image.Image, error) {
+	var img image.Image
+	var err error
 	switch ext {
 	case mimeJpeg:
 		err = hasMinimumSize(bytes.NewBuffer(buf.Bytes()), jpeg.DecodeConfig)
 		if err != nil {
-			return
+			return nil, err
 		}
 		img, err = jpeg.Decode(buf)
 	case mimePng:
 		err = hasMinimumSize(bytes.NewBuffer(buf.Bytes()), png.DecodeConfig)
 		if err != nil {
-			return
+			return nil, err
 		}
 		img, err = png.Decode(buf)
 	default:
 		err = errors.New("{Unsupported image type}")
 	}
-	return
+	return img, err
 }
 
 func encodeImg(buf *bytes.Buffer, img image.Image, mimeTyp string) error {

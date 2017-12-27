@@ -40,8 +40,9 @@ func (storageCli *StorageClient) CreateClient(ctx context.Context) error {
 
 // SaveImg save one image into gcloud storage
 func (storageCli *StorageClient) SaveImg(ctx context.Context, prefix, bucket string, bufMap *BufMedia) error {
+	var err error
 	if storageCli.client == nil {
-		if err := storageCli.CreateClient(ctx); err != nil {
+		if err = storageCli.CreateClient(ctx); err != nil {
 			log.Warningf("%s Error creating client", prefix)
 			return err
 		}
@@ -51,19 +52,23 @@ func (storageCli *StorageClient) SaveImg(ctx context.Context, prefix, bucket str
 	object := storageCli.client.Bucket(bucket).Object(bufMap.Path)
 	wc := object.NewWriter(ctx)
 	wc.ContentType = bufMap.MimeTyp
-	if _, err := io.Copy(wc, bufMap.Buf); err != nil {
+	_, err = io.Copy(wc, bufMap.Buf)
+	if err != nil {
 		log.Warningf("{StorageClient}{SaveImg} Error while coping file", prefix)
 		return err
 	}
-	if err := wc.Close(); err != nil {
+
+	err = wc.Close()
+	if err != nil {
 		log.Warningf("{StorageClient}{SaveImg} Error closing file", prefix)
 		return err
 	}
 
-	if err := object.ACL().Set(ctx, storage.AllUsers, storage.RoleReader); err != nil {
+	err = object.ACL().Set(ctx, storage.AllUsers, storage.RoleReader)
+	if err != nil {
 		log.Warningf("{StorageClient}{SaveImg} Error defining read permission", prefix)
 		return err
 	}
 
-	return nil
+	return err
 }

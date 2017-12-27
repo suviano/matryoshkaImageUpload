@@ -24,12 +24,12 @@ var extMimeTypMap = map[string]string{
 
 func solveImgInfo(filePath string) (string, string, string, error) {
 	sourceParts := strings.Split(filePath, ".")
-	if len(sourceParts) != 2 {
+	if len(sourceParts) < 2 {
 		return "", "", "", fmt.Errorf("%s is malformed", filePath)
 	}
 
-	fileName := sourceParts[0]
-	ext := sourceParts[1]
+	fileName := strings.Join(sourceParts[0:len(sourceParts)-1], ".")
+	ext := sourceParts[len(sourceParts)-1]
 
 	mimeTyp, valid := extMimeTypMap[ext]
 	if valid == false {
